@@ -1,0 +1,199 @@
+parters:
+
+
+function doPost(e) {
+  try {
+    Logger.log('Received POST request');
+    Logger.log('Post data: ' + e.postData.contents);
+    
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    
+    if (!sheet) {
+      throw new Error('No sheet found');
+    }
+    
+    Logger.log('Sheet name: ' + sheet.getName());
+    
+    const data = JSON.parse(e.postData.contents);
+    Logger.log('Parsed data: ' + JSON.stringify(data));
+    
+    const row = [
+      new Date(),
+      data.firstName || '',
+      data.lastName || '',
+      data.email || '',
+      data.phone || '',
+      data.zipCode || '',
+      data.experience || ''
+    ];
+    
+    Logger.log('Adding row: ' + JSON.stringify(row));
+    sheet.appendRow(row);
+    Logger.log('Row added successfully');
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      message: 'Partner application saved successfully'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput('Partner API is running');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+appointment:
+
+function doPost(e) {
+  try {
+    Logger.log('Received POST request');
+    Logger.log('Post data: ' + e.postData.contents);
+    
+    // Get the first sheet (index 0) instead of by name
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    
+    if (!sheet) {
+      throw new Error('No sheet found');
+    }
+    
+    Logger.log('Sheet name: ' + sheet.getName());
+    
+    const data = JSON.parse(e.postData.contents);
+    Logger.log('Parsed data: ' + JSON.stringify(data));
+    
+    // Add timestamp and form data to sheet
+    const row = [
+      new Date(),
+      data.fullName || '',
+      data.phone || '',
+      data.email || '',
+      data.service || '',
+      data.dateTime || '',
+      data.pincode || '',
+      data.message || ''
+    ];
+    
+    Logger.log('Adding row: ' + JSON.stringify(row));
+    sheet.appendRow(row);
+    Logger.log('Row added successfully');
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      message: 'Appointment saved successfully'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput('Appointment API is running');
+}
+
+// Test function
+function testSheetAccess() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  Logger.log('Sheet found: ' + (sheet ? 'Yes' : 'No'));
+  Logger.log('Sheet name: ' + sheet.getName());
+  if (sheet) {
+    sheet.appendRow([new Date(), 'Test', '1234567890', 'test@test.com', 'Test Service', '2024-01-01', '110001', 'Test message']);
+    Logger.log('Test row added');
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+consultaions:
+
+
+function doPost(e) {
+  try {
+    Logger.log('Received POST request');
+    Logger.log('Post data: ' + e.postData.contents);
+    
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    
+    if (!sheet) {
+      throw new Error('No sheet found');
+    }
+    
+    Logger.log('Sheet name: ' + sheet.getName());
+    
+    const data = JSON.parse(e.postData.contents);
+    Logger.log('Parsed data: ' + JSON.stringify(data));
+    
+    const row = [
+      new Date(),
+      data.name || '',
+      data.doctor || '',
+      data.location || ''
+    ];
+    
+    Logger.log('Adding row: ' + JSON.stringify(row));
+    sheet.appendRow(row);
+    Logger.log('Row added successfully');
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      message: 'Consultation saved successfully'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput('Consultation API is running');
+}
