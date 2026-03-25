@@ -1,0 +1,46 @@
+service: rehabb-care-api-lambda
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: eu-west-3
+  environment:
+    NODE_ENV: production
+    FRONTEND_URL: ${env:FRONTEND_URL, ''}
+    APPOINTMENTS_SCRIPT_URL: ${env:APPOINTMENTS_SCRIPT_URL, ''}
+    CONSULTATIONS_SCRIPT_URL: ${env:CONSULTATIONS_SCRIPT_URL, ''}
+    PARTNERS_SCRIPT_URL: ${env:PARTNERS_SCRIPT_URL, ''}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+
+functions:
+  app:
+    handler: lambda.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: '*'
+
+plugins:
+  - serverless-offline
+
+package:
+  exclude:
+    - node_modules/aws-sdk/**
+    - .env
+    - .env.example
+    - logs/**
+    - test-api.js
+    - README.md
+    - SETUP_GUIDE.md

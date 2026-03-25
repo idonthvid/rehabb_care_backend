@@ -26,9 +26,13 @@ app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/partners', require('./routes/partners'));
 app.use('/api/consultations', require('./routes/consultations'));
 
-// Health check route
+// Health check routes
+app.get('/', (req, res) => {
+    res.json({ status: 'OK', message: 'Rehabb Care API is running', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Rehabb Care API is running' });
+    res.json({ status: 'OK', message: 'Rehabb Care API is running', timestamp: new Date().toISOString() });
 });
 
 // Error handling middleware
@@ -47,11 +51,15 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    logger.info(`🚀 Server running on port ${PORT}`);
-    logger.info(`📝 Environment: ${process.env.NODE_ENV}`);
-    logger.info(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
-    logger.info(`📊 Logs directory: ./logs`);
-});
+// Start server only when running locally (not in Lambda)
+if (!process.env.LAMBDA_TASK_ROOT) {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        logger.info(`🚀 Server running on port ${PORT}`);
+        logger.info(`📝 Environment: ${process.env.NODE_ENV}`);
+        logger.info(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
+        logger.info(`📊 Logs directory: ./logs`);
+    });
+}
+
+module.exports = app;
