@@ -156,6 +156,13 @@ consultaions:
 function doPost(e) {
   try {
     Logger.log('Received POST request');
+    Logger.log('Event object: ' + JSON.stringify(e));
+    
+    // Check if postData exists
+    if (!e || !e.postData || !e.postData.contents) {
+      throw new Error('No post data received');
+    }
+    
     Logger.log('Post data: ' + e.postData.contents);
     
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
@@ -172,7 +179,7 @@ function doPost(e) {
     const row = [
       new Date(),
       data.name || '',
-      data.doctor || '',
+      data.phone || '',
       data.location || ''
     ];
     

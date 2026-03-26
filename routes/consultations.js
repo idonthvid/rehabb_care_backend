@@ -11,7 +11,7 @@ const {
 // Validation middleware
 const validateConsultation = [
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('doctor').trim().notEmpty().withMessage('Doctor is required'),
+    body('phone').trim().notEmpty().withMessage('Phone is required'),
     body('location').trim().notEmpty().withMessage('Location is required')
 ];
 
