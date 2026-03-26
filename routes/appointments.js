@@ -10,11 +10,15 @@ const {
 
 // Validation middleware
 const validateAppointment = [
-    body('fullName').trim().notEmpty().withMessage('Full name is required'),
+    body('name').trim().notEmpty().withMessage('Name is required'),
     body('phone').trim().notEmpty().withMessage('Phone is required'),
     body('email').isEmail().withMessage('Valid email is required'),
-    body('service').notEmpty().withMessage('Service is required'),
-    body('dateTime').notEmpty().withMessage('Date and time is required')
+    body('serviceArea').notEmpty().withMessage('Service area is required'),
+    body('preferredDateTime').notEmpty().withMessage('Preferred date and time is required'),
+    body('city').trim().notEmpty().withMessage('City is required'),
+    body('pincode').trim().notEmpty().withMessage('Pincode is required'),
+    body('address').trim().notEmpty().withMessage('Address is required'),
+    body('notes').optional().trim()
 ];
 
 // GET all appointments

@@ -10,12 +10,13 @@ const {
 
 // Validation middleware
 const validatePartner = [
-    body('firstName').trim().notEmpty().withMessage('First name is required'),
-    body('lastName').trim().notEmpty().withMessage('Last name is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
+    body('name').trim().notEmpty().withMessage('Name is required'),
     body('phone').trim().notEmpty().withMessage('Phone is required'),
-    body('zipCode').trim().notEmpty().withMessage('Zip code is required'),
-    body('experience').trim().notEmpty().withMessage('Experience is required')
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('specialization').trim().notEmpty().withMessage('Specialization is required'),
+    body('pincode').trim().notEmpty().withMessage('Pincode is required'),
+    body('city').trim().notEmpty().withMessage('City is required'),
+    body('referralCode').optional().trim()
 ];
 
 // GET all partners

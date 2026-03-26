@@ -19,12 +19,13 @@ function doPost(e) {
     
     const row = [
       new Date(),
-      data.firstName || '',
-      data.lastName || '',
-      data.email || '',
+      data.name || '',
       data.phone || '',
-      data.zipCode || '',
-      data.experience || ''
+      data.email || '',
+      data.specialization || '',
+      data.pincode || '',
+      data.city || '',
+      data.referralCode || ''
     ];
     
     Logger.log('Adding row: ' + JSON.stringify(row));
@@ -73,6 +74,34 @@ appointment:
 function doPost(e) {
   try {
     Logger.log('Received POST request');
+    
+    // Handle undefined event object (for testing)
+    if (!e) {
+      Logger.log('Event object is undefined - using test data');
+      e = {
+        postData: {
+          contents: JSON.stringify({
+            name: 'Test User',
+            phone: '1234567890',
+            email: 'test@example.com',
+            serviceArea: 'Test Service',
+            preferredDateTime: '2025-01-01 10:00',
+            city: 'Test City',
+            pincode: '110001',
+            address: 'Test Address',
+            notes: 'Test Notes'
+          })
+        }
+      };
+    }
+    
+    Logger.log('Event object: ' + JSON.stringify(e));
+    
+    // Check if postData exists
+    if (!e.postData || !e.postData.contents) {
+      throw new Error('No post data received');
+    }
+    
     Logger.log('Post data: ' + e.postData.contents);
     
     // Get the first sheet (index 0) instead of by name
@@ -90,13 +119,15 @@ function doPost(e) {
     // Add timestamp and form data to sheet
     const row = [
       new Date(),
-      data.fullName || '',
+      data.name || '',
       data.phone || '',
       data.email || '',
-      data.service || '',
-      data.dateTime || '',
+      data.serviceArea || '',
+      data.preferredDateTime || '',
+      data.city || '',
       data.pincode || '',
-      data.message || ''
+      data.address || '',
+      data.notes || ''
     ];
     
     Logger.log('Adding row: ' + JSON.stringify(row));
@@ -121,14 +152,39 @@ function doGet(e) {
   return ContentService.createTextOutput('Appointment API is running');
 }
 
-// Test function
-function testSheetAccess() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  Logger.log('Sheet found: ' + (sheet ? 'Yes' : 'No'));
-  Logger.log('Sheet name: ' + sheet.getName());
-  if (sheet) {
-    sheet.appendRow([new Date(), 'Test', '1234567890', 'test@test.com', 'Test Service', '2024-01-01', '110001', 'Test message']);
-    Logger.log('Test row added');
+// Test function - Run this to test the script
+function testAppointment() {
+  Logger.log('Starting test...');
+  const result = doPost();
+  Logger.log('Test result: ' + result.getContent());
+}
+
+// Direct test function - adds a row directly
+function testDirectAdd() {
+  try {
+    Logger.log('Starting direct test...');
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    Logger.log('Sheet found: ' + (sheet ? 'Yes' : 'No'));
+    Logger.log('Sheet name: ' + sheet.getName());
+    
+    if (sheet) {
+      const row = [
+        new Date(),
+        'Test User',
+        '1234567890',
+        'test@example.com',
+        'Knee & Ankle Care',
+        '2025-01-15 10:00',
+        'Mumbai',
+        '400001',
+        'Test Address 123',
+        'Test notes here'
+      ];
+      sheet.appendRow(row);
+      Logger.log('Test row added successfully!');
+    }
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
   }
 }
 
