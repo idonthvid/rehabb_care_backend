@@ -116,8 +116,22 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     Logger.log('Parsed data: ' + JSON.stringify(data));
     
+    // Check if it's a consultation (has 'location' field but no 'email')
+    const isConsultation = data.location && !data.email;
+    
     // Add timestamp and form data to sheet
-    const row = [
+    const row = isConsultation ? [
+      new Date(),
+      data.name || '',
+      data.phone || '',
+      '-',  // email
+      '-',  // serviceArea
+      '-',  // preferredDateTime
+      data.location || '',  // city/location
+      '-',  // pincode
+      '-',  // address
+      '-'   // notes
+    ] : [
       new Date(),
       data.name || '',
       data.phone || '',
@@ -136,7 +150,7 @@ function doPost(e) {
     
     return ContentService.createTextOutput(JSON.stringify({
       status: 'success',
-      message: 'Appointment saved successfully'
+      message: isConsultation ? 'Consultation saved successfully' : 'Appointment saved successfully'
     })).setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {
@@ -156,6 +170,22 @@ function doGet(e) {
 function testAppointment() {
   Logger.log('Starting test...');
   const result = doPost();
+  Logger.log('Test result: ' + result.getContent());
+}
+
+// Test function for consultation
+function testConsultation() {
+  Logger.log('Starting consultation test...');
+  const e = {
+    postData: {
+      contents: JSON.stringify({
+        name: 'Test Consultation User',
+        phone: '9876543210',
+        location: 'Bangalore'
+      })
+    }
+  };
+  const result = doPost(e);
   Logger.log('Test result: ' + result.getContent());
 }
 

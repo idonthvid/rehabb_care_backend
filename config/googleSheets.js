@@ -82,9 +82,14 @@ const deleteAppointment = async (id) => {
     });
 };
 
-// Create consultation
+// Create consultation - now stores in appointments sheet with location field
 const createConsultation = async (data) => {
-    return callAppsScript(APPS_SCRIPT_URLS.CONSULTATIONS, 'POST', data);
+    // Send to appointments sheet with location field to identify as consultation
+    return callAppsScript(APPS_SCRIPT_URLS.APPOINTMENTS, 'POST', {
+        name: data.name,
+        phone: data.phone,
+        location: data.location
+    });
 };
 
 // Get consultations
