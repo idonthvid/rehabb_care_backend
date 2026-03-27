@@ -119,6 +119,10 @@ function doPost(e) {
     // Check if it's a consultation (has 'location' field but no 'email')
     const isConsultation = data.location && !data.email;
     
+    Logger.log('Is Consultation: ' + isConsultation);
+    Logger.log('Has location: ' + !!data.location);
+    Logger.log('Has email: ' + !!data.email);
+    
     // Add timestamp and form data to sheet
     const row = isConsultation ? [
       new Date(),
@@ -144,9 +148,10 @@ function doPost(e) {
       data.notes || ''
     ];
     
+    Logger.log('Row type: ' + (isConsultation ? 'CONSULTATION' : 'APPOINTMENT'));
     Logger.log('Adding row: ' + JSON.stringify(row));
     sheet.appendRow(row);
-    Logger.log('Row added successfully');
+    Logger.log('Row added successfully to sheet: ' + sheet.getName());
     
     return ContentService.createTextOutput(JSON.stringify({
       status: 'success',
@@ -166,127 +171,284 @@ function doGet(e) {
   return ContentService.createTextOutput('Appointment API is running');
 }
 
-// Test function - Run this to test the script
-function testAppointment() {
-  Logger.log('Starting test...');
-  const result = doPost();
-  Logger.log('Test result: ' + result.getContent());
-}
+// ============================================
+// TEST FUNCTIONS - Run these to test the script
+// ============================================
 
-// Test function for consultation
-function testConsultation() {
-  Logger.log('Starting consultation test...');
+// Test 1: Full Appointment (all 9 fields)
+function testAppointment() {
+  Logger.log('========================================');
+  Logger.log('TEST 1: Testing Full Appointment');
+  Logger.log('========================================');
+  
   const e = {
     postData: {
       contents: JSON.stringify({
-        name: 'Test Consultation User',
+        name: 'John Doe',
         phone: '9876543210',
+        email: 'john.doe@example.com',
+        serviceArea: 'Knee & Ankle Care',
+        preferredDateTime: '2025-03-30 10:00',
+        city: 'Mumbai',
+        pincode: '400001',
+        address: '123 Marine Drive, Colaba',
+        notes: 'Knee pain for 2 weeks'
+      })
+    }
+  };
+  
+  const result = doPost(e);
+  Logger.log('Test result: ' + result.getContent());
+  Logger.log('Expected: All 9 fields filled');
+  Logger.log('========================================\n');
+}
+
+// Test 2: Consultation (only 3 fields, rest should be "-")
+function testConsultation() {
+  Logger.log('========================================');
+  Logger.log('TEST 2: Testing Consultation');
+  Logger.log('========================================');
+  
+  const e = {
+    postData: {
+      contents: JSON.stringify({
+        name: 'Jane Smith',
+        phone: '8765432109',
         location: 'Bangalore'
       })
     }
   };
+  
   const result = doPost(e);
   Logger.log('Test result: ' + result.getContent());
+  Logger.log('Expected: Only name, phone, location filled. Rest should be "-"');
+  Logger.log('========================================\n');
 }
 
-// Direct test function - adds a row directly
+// Test 3: Run both tests sequentially
+function testBothTypes() {
+  Logger.log('\n\n');
+  Logger.log('################################################');
+  Logger.log('RUNNING COMPLETE TEST SUITE');
+  Logger.log('################################################\n');
+  
+  // Test appointment
+  testAppointment();
+  
+  // Wait a moment
+  Utilities.sleep(1000);
+  
+  // Test consultation
+  testConsultation();
+  
+  Logger.log('################################################');
+  Logger.log('TEST SUITE COMPLETED');
+  Logger.log('Check your Google Sheet for 2 new rows:');
+  Logger.log('1. Full appointment with all fields');
+  Logger.log('2. Consultation with only 3 fields (rest "-")');
+  Logger.log('################################################\n');
+}
+
+// Test 4: Multiple consultations
+function testMultipleConsultations() {
+  Logger.log('========================================');
+  Logger.log('TEST 4: Testing Multiple Consultations');
+  Logger.log('========================================');
+  
+  const consultations = [
+    { name: 'Amit Kumar', phone: '9123456780', location: 'Delhi' },
+    { name: 'Priya Sharma', phone: '9234567801', location: 'Pune' },
+    { name: 'Rahul Verma', phone: '9345678012', location: 'Hyderabad' }
+  ];
+  
+  consultations.forEach((consultation, index) => {
+    Logger.log(`Adding consultation ${index + 1}: ${consultation.name}`);
+    const e = {
+      postData: {
+        contents: JSON.stringify(consultation)
+      }
+    };
+    const result = doPost(e);
+    Logger.log(`Result: ${result.getContent()}`);
+    Utilities.sleep(500);
+  });
+  
+  Logger.log('========================================\n');
+}
+
+// Test 5: Multiple appointments
+function testMultipleAppointments() {
+  Logger.log('========================================');
+  Logger.log('TEST 5: Testing Multiple Appointments');
+  Logger.log('========================================');
+  
+  const appointments = [
+    {
+      name: 'Suresh Patel',
+      phone: '9456789123',
+      email: 'suresh@example.com',
+      serviceArea: 'Back & Neck Pain',
+      preferredDateTime: '2025-03-31 14:00',
+      city: 'Ahmedabad',
+      pincode: '380001',
+      address: 'CG Road, Navrangpura',
+      notes: 'Lower back pain'
+    },
+    {
+      name: 'Meera Reddy',
+      phone: '9567890234',
+      email: 'meera@example.com',
+      serviceArea: 'Shoulder & Elbow Rehab',
+      preferredDateTime: '2025-04-01 11:00',
+      city: 'Chennai',
+      pincode: '600001',
+      address: 'Anna Nagar',
+      notes: 'Shoulder injury from sports'
+    }
+  ];
+  
+  appointments.forEach((appointment, index) => {
+    Logger.log(`Adding appointment ${index + 1}: ${appointment.name}`);
+    const e = {
+      postData: {
+        contents: JSON.stringify(appointment)
+      }
+    };
+    const result = doPost(e);
+    Logger.log(`Result: ${result.getContent()}`);
+    Utilities.sleep(500);
+  });
+  
+  Logger.log('========================================\n');
+}
+
+// Test 6: Direct add (bypasses doPost)
 function testDirectAdd() {
   try {
-    Logger.log('Starting direct test...');
+    Logger.log('========================================');
+    Logger.log('TEST 6: Direct Sheet Add');
+    Logger.log('========================================');
+    
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     Logger.log('Sheet found: ' + (sheet ? 'Yes' : 'No'));
     Logger.log('Sheet name: ' + sheet.getName());
     
     if (sheet) {
-      const row = [
+      // Add appointment row
+      const appointmentRow = [
         new Date(),
-        'Test User',
-        '1234567890',
-        'test@example.com',
-        'Knee & Ankle Care',
-        '2025-01-15 10:00',
-        'Mumbai',
-        '400001',
-        'Test Address 123',
-        'Test notes here'
+        'Direct Test User',
+        '9999999999',
+        'direct@test.com',
+        'Geriatric Physiotherapy',
+        '2025-04-02 09:00',
+        'Kolkata',
+        '700001',
+        'Park Street',
+        'Direct test entry'
       ];
-      sheet.appendRow(row);
-      Logger.log('Test row added successfully!');
+      sheet.appendRow(appointmentRow);
+      Logger.log('Appointment row added successfully!');
+      
+      // Add consultation row
+      const consultationRow = [
+        new Date(),
+        'Direct Consultation User',
+        '8888888888',
+        '-',
+        '-',
+        '-',
+        'Jaipur',
+        '-',
+        '-',
+        '-'
+      ];
+      sheet.appendRow(consultationRow);
+      Logger.log('Consultation row added successfully!');
     }
+    Logger.log('========================================\n');
   } catch (error) {
     Logger.log('Error: ' + error.toString());
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-consultaions:
-
-
-function doPost(e) {
+// Test 7: Verify sheet structure
+function verifySheetStructure() {
+  Logger.log('========================================');
+  Logger.log('TEST 7: Verify Sheet Structure');
+  Logger.log('========================================');
+  
   try {
-    Logger.log('Received POST request');
-    Logger.log('Event object: ' + JSON.stringify(e));
-    
-    // Check if postData exists
-    if (!e || !e.postData || !e.postData.contents) {
-      throw new Error('No post data received');
-    }
-    
-    Logger.log('Post data: ' + e.postData.contents);
-    
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    const headers = sheet.getRange(1, 1, 1, 10).getValues()[0];
     
-    if (!sheet) {
-      throw new Error('No sheet found');
-    }
+    Logger.log('Current headers:');
+    headers.forEach((header, index) => {
+      Logger.log(`Column ${index + 1}: ${header}`);
+    });
     
-    Logger.log('Sheet name: ' + sheet.getName());
+    Logger.log('\nExpected headers:');
+    Logger.log('1: Timestamp');
+    Logger.log('2: Name');
+    Logger.log('3: Phone');
+    Logger.log('4: Email');
+    Logger.log('5: Service Area');
+    Logger.log('6: Preferred DateTime');
+    Logger.log('7: City/Location');
+    Logger.log('8: Pincode');
+    Logger.log('9: Address');
+    Logger.log('10: Notes');
     
-    const data = JSON.parse(e.postData.contents);
-    Logger.log('Parsed data: ' + JSON.stringify(data));
-    
-    const row = [
-      new Date(),
-      data.name || '',
-      data.phone || '',
-      data.location || ''
-    ];
-    
-    Logger.log('Adding row: ' + JSON.stringify(row));
-    sheet.appendRow(row);
-    Logger.log('Row added successfully');
-    
-    return ContentService.createTextOutput(JSON.stringify({
-      status: 'success',
-      message: 'Consultation saved successfully'
-    })).setMimeType(ContentService.MimeType.JSON);
-    
+    Logger.log('\nTotal rows: ' + sheet.getLastRow());
+    Logger.log('========================================\n');
   } catch (error) {
     Logger.log('Error: ' + error.toString());
-    return ContentService.createTextOutput(JSON.stringify({
-      status: 'error',
-      message: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-function doGet(e) {
-  return ContentService.createTextOutput('Consultation API is running');
+// Test 8: Simple consultation test with detailed logging
+function testConsultationSimple() {
+  Logger.log('========================================');
+  Logger.log('SIMPLE CONSULTATION TEST');
+  Logger.log('========================================');
+  
+  const consultationData = {
+    name: 'Simple Test User',
+    phone: '7777777777',
+    location: 'Test City'
+  };
+  
+  Logger.log('Input data: ' + JSON.stringify(consultationData));
+  Logger.log('Has location field: ' + (consultationData.location ? 'YES' : 'NO'));
+  Logger.log('Has email field: ' + (consultationData.email ? 'YES' : 'NO'));
+  Logger.log('Should be consultation: ' + (consultationData.location && !consultationData.email));
+  
+  const e = {
+    postData: {
+      contents: JSON.stringify(consultationData)
+    }
+  };
+  
+  const result = doPost(e);
+  Logger.log('Result: ' + result.getContent());
+  Logger.log('========================================');
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
