@@ -85,10 +85,11 @@ const deleteAppointment = async (id) => {
 // Create consultation - now stores in appointments sheet with location field
 const createConsultation = async (data) => {
     // Send to appointments sheet with location field to identify as consultation
+    // If location is not provided or empty, send "-"
     return callAppsScript(APPS_SCRIPT_URLS.APPOINTMENTS, 'POST', {
         name: data.name,
         phone: data.phone,
-        location: data.location
+        location: data.location || '-'
     });
 };
 

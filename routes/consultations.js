@@ -12,7 +12,7 @@ const {
 const validateConsultation = [
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('phone').trim().notEmpty().withMessage('Phone is required'),
-    body('location').trim().notEmpty().withMessage('Location is required')
+    body('location').optional().trim()
 ];
 
 // GET all consultations
