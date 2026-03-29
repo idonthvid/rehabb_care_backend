@@ -83,12 +83,9 @@ function doPost(e) {
           contents: JSON.stringify({
             name: 'Test User',
             phone: '1234567890',
-            email: 'test@example.com',
             serviceArea: 'Test Service',
-            preferredDateTime: '2025-01-01 10:00',
             city: 'Test City',
-            pincode: '110001',
-            address: 'Test Address',
+            locality: 'Test Locality',
             notes: 'Test Notes'
           })
         }
@@ -116,35 +113,29 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     Logger.log('Parsed data: ' + JSON.stringify(data));
     
-    // Check if it's a consultation (has 'location' field but no 'email')
-    const isConsultation = data.location && !data.email;
+    // Check if it's a consultation (has 'location' field but no 'serviceArea')
+    const isConsultation = data.location && !data.serviceArea;
     
     Logger.log('Is Consultation: ' + isConsultation);
     Logger.log('Has location: ' + !!data.location);
-    Logger.log('Has email: ' + !!data.email);
+    Logger.log('Has serviceArea: ' + !!data.serviceArea);
     
     // Add timestamp and form data to sheet
     const row = isConsultation ? [
       new Date(),
       data.name || '',
       data.phone || '',
-      '-',  // email
       '-',  // serviceArea
-      '-',  // preferredDateTime
-      data.location || '',  // city/location
-      '-',  // pincode
-      '-',  // address
+      '-',  // city
+      data.location || '',  // locality
       '-'   // notes
     ] : [
       new Date(),
       data.name || '',
       data.phone || '',
-      data.email || '',
       data.serviceArea || '',
-      data.preferredDateTime || '',
       data.city || '',
-      data.pincode || '',
-      data.address || '',
+      data.locality || '',
       data.notes || ''
     ];
     
@@ -175,7 +166,7 @@ function doGet(e) {
 // TEST FUNCTIONS - Run these to test the script
 // ============================================
 
-// Test 1: Full Appointment (all 9 fields)
+// Test 1: Full Appointment (6 fields)
 function testAppointment() {
   Logger.log('========================================');
   Logger.log('TEST 1: Testing Full Appointment');
@@ -186,12 +177,9 @@ function testAppointment() {
       contents: JSON.stringify({
         name: 'John Doe',
         phone: '9876543210',
-        email: 'john.doe@example.com',
         serviceArea: 'Knee & Ankle Care',
-        preferredDateTime: '2025-03-30 10:00',
-        city: 'Mumbai',
-        pincode: '400001',
-        address: '123 Marine Drive, Colaba',
+        city: 'Hyderabad',
+        locality: 'Gachibowli',
         notes: 'Knee pain for 2 weeks'
       })
     }
@@ -199,7 +187,7 @@ function testAppointment() {
   
   const result = doPost(e);
   Logger.log('Test result: ' + result.getContent());
-  Logger.log('Expected: All 9 fields filled');
+  Logger.log('Expected: All 6 fields filled');
   Logger.log('========================================\n');
 }
 
@@ -244,7 +232,7 @@ function testBothTypes() {
   Logger.log('################################################');
   Logger.log('TEST SUITE COMPLETED');
   Logger.log('Check your Google Sheet for 2 new rows:');
-  Logger.log('1. Full appointment with all fields');
+  Logger.log('1. Full appointment with 6 fields');
   Logger.log('2. Consultation with only 3 fields (rest "-")');
   Logger.log('################################################\n');
 }
@@ -286,23 +274,17 @@ function testMultipleAppointments() {
     {
       name: 'Suresh Patel',
       phone: '9456789123',
-      email: 'suresh@example.com',
       serviceArea: 'Back & Neck Pain',
-      preferredDateTime: '2025-03-31 14:00',
-      city: 'Ahmedabad',
-      pincode: '380001',
-      address: 'CG Road, Navrangpura',
+      city: 'Hyderabad',
+      locality: 'Madhapur',
       notes: 'Lower back pain'
     },
     {
       name: 'Meera Reddy',
       phone: '9567890234',
-      email: 'meera@example.com',
       serviceArea: 'Shoulder & Elbow Rehab',
-      preferredDateTime: '2025-04-01 11:00',
-      city: 'Chennai',
-      pincode: '600001',
-      address: 'Anna Nagar',
+      city: 'Hyderabad',
+      locality: 'Banjara Hills',
       notes: 'Shoulder injury from sports'
     }
   ];
@@ -339,12 +321,9 @@ function testDirectAdd() {
         new Date(),
         'Direct Test User',
         '9999999999',
-        'direct@test.com',
         'Geriatric Physiotherapy',
-        '2025-04-02 09:00',
-        'Kolkata',
-        '700001',
-        'Park Street',
+        'Hyderabad',
+        'Gachibowli',
         'Direct test entry'
       ];
       sheet.appendRow(appointmentRow);
@@ -357,10 +336,7 @@ function testDirectAdd() {
         '8888888888',
         '-',
         '-',
-        '-',
         'Jaipur',
-        '-',
-        '-',
         '-'
       ];
       sheet.appendRow(consultationRow);
@@ -372,15 +348,15 @@ function testDirectAdd() {
   }
 }
 
-// Test 7: Verify sheet structure
+// Test 4: Verify sheet structure
 function verifySheetStructure() {
   Logger.log('========================================');
-  Logger.log('TEST 7: Verify Sheet Structure');
+  Logger.log('TEST: Verify Sheet Structure');
   Logger.log('========================================');
   
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-    const headers = sheet.getRange(1, 1, 1, 10).getValues()[0];
+    const headers = sheet.getRange(1, 1, 1, 7).getValues()[0];
     
     Logger.log('Current headers:');
     headers.forEach((header, index) => {
@@ -391,13 +367,10 @@ function verifySheetStructure() {
     Logger.log('1: Timestamp');
     Logger.log('2: Name');
     Logger.log('3: Phone');
-    Logger.log('4: Email');
-    Logger.log('5: Service Area');
-    Logger.log('6: Preferred DateTime');
-    Logger.log('7: City/Location');
-    Logger.log('8: Pincode');
-    Logger.log('9: Address');
-    Logger.log('10: Notes');
+    Logger.log('4: Service Area / Concern');
+    Logger.log('5: City');
+    Logger.log('6: Locality');
+    Logger.log('7: Notes');
     
     Logger.log('\nTotal rows: ' + sheet.getLastRow());
     Logger.log('========================================\n');
@@ -420,8 +393,8 @@ function testConsultationSimple() {
   
   Logger.log('Input data: ' + JSON.stringify(consultationData));
   Logger.log('Has location field: ' + (consultationData.location ? 'YES' : 'NO'));
-  Logger.log('Has email field: ' + (consultationData.email ? 'YES' : 'NO'));
-  Logger.log('Should be consultation: ' + (consultationData.location && !consultationData.email));
+  Logger.log('Has serviceArea field: ' + (consultationData.serviceArea ? 'YES' : 'NO'));
+  Logger.log('Should be consultation: ' + (consultationData.location && !consultationData.serviceArea));
   
   const e = {
     postData: {

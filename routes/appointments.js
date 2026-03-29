@@ -12,12 +12,9 @@ const {
 const validateAppointment = [
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('phone').trim().notEmpty().withMessage('Phone is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
     body('serviceArea').notEmpty().withMessage('Service area is required'),
-    body('preferredDateTime').notEmpty().withMessage('Preferred date and time is required'),
     body('city').trim().notEmpty().withMessage('City is required'),
-    body('pincode').trim().notEmpty().withMessage('Pincode is required'),
-    body('address').trim().notEmpty().withMessage('Address is required'),
+    body('locality').trim().notEmpty().withMessage('Locality is required'),
     body('notes').optional().trim()
 ];
 
