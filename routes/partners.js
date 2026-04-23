@@ -14,6 +14,7 @@ const validatePartner = [
     body('phone').trim().notEmpty().withMessage('Phone is required'),
     body('email').isEmail().withMessage('Valid email is required'),
     body('specialization').trim().notEmpty().withMessage('Specialization is required'),
+    body('yearsOfExperience').trim().notEmpty().withMessage('Years of experience is required'),
     body('pincode').trim().notEmpty().withMessage('Pincode is required'),
     body('city').trim().notEmpty().withMessage('City is required'),
     body('referralCode').optional().trim()

@@ -1,5 +1,97 @@
 parters:
 
+// ============================================
+// MIGRATION FUNCTION - RUN THIS ONCE BEFORE DEPLOYING NEW VERSION
+// ============================================
+function migrateToNewStructure() {
+  Logger.log('========================================');
+  Logger.log('STARTING MIGRATION');
+  Logger.log('========================================');
+  
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  const lastRow = sheet.getLastRow();
+  
+  Logger.log('Sheet name: ' + sheet.getName());
+  Logger.log('Total rows: ' + lastRow);
+  
+  if (lastRow === 0) {
+    Logger.log('Sheet is empty. Creating headers only.');
+    const headers = ['Timestamp', 'Name', 'Phone', 'Email', 'Specialization', 'Years of Experience', 'Pincode', 'City', 'Referral Code'];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    Logger.log('Headers created successfully!');
+    Logger.log('========================================');
+    return;
+  }
+  
+  // Check current structure
+  const currentHeaders = sheet.getRange(1, 1, 1, 8).getValues()[0];
+  Logger.log('Current headers: ' + currentHeaders.join(', '));
+  
+  // Check if already migrated
+  if (currentHeaders.length >= 9 || currentHeaders[5] === 'Years of Experience') {
+    Logger.log('⚠️ Sheet already has 9 columns or Years of Experience column exists.');
+    Logger.log('Migration may have already been run. Aborting to prevent data corruption.');
+    Logger.log('========================================');
+    return;
+  }
+  
+  // Insert new column after Specialization (column F, index 6)
+  Logger.log('Inserting new column at position 6 (after Specialization)...');
+  sheet.insertColumnAfter(5); // Insert after column E (Specialization)
+  
+  // Update headers
+  const newHeaders = ['Timestamp', 'Name', 'Phone', 'Email', 'Specialization', 'Years of Experience', 'Pincode', 'City', 'Referral Code'];
+  sheet.getRange(1, 1, 1, newHeaders.length).setValues([newHeaders]);
+  Logger.log('Headers updated successfully!');
+  
+  // Fill "Not specified" for existing rows (skip header row)
+  if (lastRow > 1) {
+    const fillData = [];
+    for (let i = 2; i <= lastRow; i++) {
+      fillData.push(['Not specified']);
+    }
+    sheet.getRange(2, 6, lastRow - 1, 1).setValues(fillData);
+    Logger.log('Filled "Not specified" for ' + (lastRow - 1) + ' existing records');
+  }
+  
+  Logger.log('========================================');
+  Logger.log('✅ MIGRATION COMPLETED SUCCESSFULLY!');
+  Logger.log('New structure:');
+  Logger.log('1. Timestamp');
+  Logger.log('2. Name');
+  Logger.log('3. Phone');
+  Logger.log('4. Email');
+  Logger.log('5. Specialization');
+  Logger.log('6. Years of Experience (NEW)');
+  Logger.log('7. Pincode');
+  Logger.log('8. City');
+  Logger.log('9. Referral Code');
+  Logger.log('========================================');
+}
+
+function ensureHeaders() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  const expectedHeaders = [
+    'Timestamp', 
+    'Name', 
+    'Phone', 
+    'Email', 
+    'Specialization', 
+    'Years of Experience',
+    'Pincode', 
+    'City', 
+    'Referral Code'
+  ];
+  
+  // Check if first row is empty or needs update
+  const firstCell = sheet.getRange(1, 1).getValue();
+  
+  // If first cell is empty, set headers
+  if (firstCell === '' || firstCell !== 'Timestamp') {
+    sheet.getRange(1, 1, 1, expectedHeaders.length).setValues([expectedHeaders]);
+    Logger.log('Headers created/updated');
+  }
+}
 
 function doPost(e) {
   try {
@@ -14,6 +106,9 @@ function doPost(e) {
     
     Logger.log('Sheet name: ' + sheet.getName());
     
+    // Ensure headers exist before adding data
+    ensureHeaders();
+    
     const data = JSON.parse(e.postData.contents);
     Logger.log('Parsed data: ' + JSON.stringify(data));
     
@@ -23,6 +118,7 @@ function doPost(e) {
       data.phone || '',
       data.email || '',
       data.specialization || '',
+      data.yearsOfExperience || '',
       data.pincode || '',
       data.city || '',
       data.referralCode || ''
@@ -48,6 +144,79 @@ function doPost(e) {
 
 function doGet(e) {
   return ContentService.createTextOutput('Partner API is running');
+}
+
+// ============================================
+// TEST FUNCTION - Run this to test the new structure
+// ============================================
+function testPartnerWithExperience() {
+  Logger.log('========================================');
+  Logger.log('TEST: Partner with Years of Experience');
+  Logger.log('========================================');
+  
+  const testData = {
+    name: 'Test Therapist',
+    phone: '9876543210',
+    email: 'test@example.com',
+    specialization: 'Orthopedic',
+    yearsOfExperience: '3-5',
+    pincode: '500032',
+    city: 'Hyderabad',
+    referralCode: 'TEST123'
+  };
+  
+  Logger.log('Test data: ' + JSON.stringify(testData));
+  
+  const e = {
+    postData: {
+      contents: JSON.stringify(testData)
+    }
+  };
+  
+  const result = doPost(e);
+  Logger.log('Result: ' + result.getContent());
+  
+  Logger.log('========================================');
+  Logger.log('Check your Google Sheet for the new row with:');
+  Logger.log('- Name: Test Therapist');
+  Logger.log('- Years of Experience: 3-5');
+  Logger.log('- All 9 columns filled');
+  Logger.log('========================================');
+}
+
+// Test without years of experience (should still work with empty value)
+function testPartnerWithoutExperience() {
+  Logger.log('========================================');
+  Logger.log('TEST: Partner WITHOUT Years of Experience');
+  Logger.log('========================================');
+  
+  const testData = {
+    name: 'Test Therapist 2',
+    phone: '9876543211',
+    email: 'test2@example.com',
+    specialization: 'Sports',
+    yearsOfExperience: '',  // Empty
+    pincode: '500033',
+    city: 'Bangalore',
+    referralCode: ''
+  };
+  
+  Logger.log('Test data: ' + JSON.stringify(testData));
+  
+  const e = {
+    postData: {
+      contents: JSON.stringify(testData)
+    }
+  };
+  
+  const result = doPost(e);
+  Logger.log('Result: ' + result.getContent());
+  
+  Logger.log('========================================');
+  Logger.log('Check your Google Sheet for the new row with:');
+  Logger.log('- Name: Test Therapist 2');
+  Logger.log('- Years of Experience: (empty)');
+  Logger.log('========================================');
 }
 
 
